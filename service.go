@@ -8,8 +8,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 
-	md "github.com/gtyrin/ds-audiomd"
-	srv "github.com/gtyrin/go-service"
+	md "github.com/ytsiuryn/ds-audiomd"
+	srv "github.com/ytsiuryn/ds-service"
 )
 
 // Описание сервиса

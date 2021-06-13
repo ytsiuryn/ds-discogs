@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	md "github.com/gtyrin/ds-audiomd"
+	md "github.com/ytsiuryn/ds-audiomd"
 )
 
 // Тестовые файлы.
