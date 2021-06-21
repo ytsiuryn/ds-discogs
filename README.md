@@ -1,8 +1,8 @@
-# go-discogs #
+# ds-discogs #
 
 Микросервис-клиент [Discogs](https://www.discogs.com/developers). Обмен сообщениями реализован с использованием [RabbitMQ](https://www.rabbitmq.com).
 
-## Пример использования:
+## Пример запуска микросервиса:
 
     package main
 
@@ -37,3 +37,7 @@
 	    cl.Dispatch(cl)
     }
 
+
+## Пример клиента Python (тест)
+
+См. файл [discogs.py](https://github.com/ytsiuryn/ds-discogs/blob/main/discogs.py)
