@@ -54,9 +54,10 @@ type Discogs struct {
 }
 
 // NewDiscogsClient создает объект нового клиента Discogs.
-func NewDiscogsClient(connstr string) (*Discogs, error) {
+func NewDiscogsClient(connstr, optFile string) (*Discogs, error) {
 	conf := config{}
-	srv.ReadConfig("discogs.yml", &conf)
+
+	srv.ReadConfig(optFile, &conf)
 
 	log.SetLevel(srv.LogLevel(conf.Product))
 
