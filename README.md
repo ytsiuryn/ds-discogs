@@ -3,7 +3,7 @@
 Микросервис-клиент [Discogs](https://www.discogs.com/developers). Обмен сообщениями реализован с использованием [RabbitMQ](https://www.rabbitmq.com).
 
 ## Пример запуска микросервиса:
-
+```go
     package main
 
     import (
@@ -23,8 +23,7 @@
 		    "Message server connection string")
 	    flag.Parse()
 
-	    log.Info(
-		    fmt.Sprintf("%s starting..", discogs.ServiceName))
+	    log.Info(fmt.Sprintf("%s starting..", discogs.ServiceName))
 
 	    cl, err := discogs.NewDiscogsClient(*connstr)
 	    srv.FailOnError(err, "Failed to create Discogs client")
@@ -36,7 +35,7 @@
 
 	    cl.Dispatch(cl)
     }
-
+```
 
 ## Пример клиента Python (тест)
 
