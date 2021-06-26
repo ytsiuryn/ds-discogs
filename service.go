@@ -182,6 +182,7 @@ func (d *Discogs) searchReleaseByID(request *srv.Request) ([]*md.Suggestion, err
 			{
 				Entity:           r,
 				ServiceName:      ServiceName,
+				OnlineSuggeston:  true,
 				SourceSimilarity: 1.,
 			}},
 		nil
@@ -208,6 +209,7 @@ func (d *Discogs) searchReleaseByIncompleteData(request *srv.Request) ([]*md.Sug
 				&md.Suggestion{
 					Entity:           r,
 					ServiceName:      ServiceName,
+					OnlineSuggeston:  true,
 					SourceSimilarity: score,
 				})
 		}
