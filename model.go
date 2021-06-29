@@ -244,7 +244,7 @@ func (a *artist) TrackPositions() []string {
 
 func (a *artist) ReleaseActor(r *md.Release) {
 	if a.Role == "" {
-		r.Actors.AddRole(a.Name, "performer")
+		r.ActorRoles.Add(a.Name, "performer")
 	} else {
 		// TODO: РЕАЛиЗОВАТЬ!
 		log.Panicf("НЕ РЕАЛИЗОВАНО ДЛЯ НЕ ПЕРФОРМЕРОВ: %s", a.Role)
@@ -255,14 +255,12 @@ func (a *artist) ReleaseActor(r *md.Release) {
 }
 
 func (a *artist) TrackActor(track *md.Track) {
-	var actor *md.ActorInRoles
 	if a.Role == "" {
-		actor = track.Record.Actors.AddRole(a.Name, "performer")
+		track.Record.ActorRoles.Add(a.Name, "performer")
 	} else {
-		actors := ActorsByRole(track, a.Role)
-		actor = actors.AddRole(a.Name, a.Role)
+		ActorsByRole(track, a.Role).Add(a.Name, a.Role)
 	}
-	actor.IDs.Add(ServiceName, strconv.Itoa(int(a.ID)))
+	track.Actors.Add(a.Name, ServiceName, strconv.Itoa(int(a.ID)))
 }
 
 func (tr *track) Track() *md.Track {
@@ -278,11 +276,11 @@ func (tr *track) Track() *md.Track {
 			track.Duration = intutils.NewDurationFromString(sTrack.Duration)
 			for _, artist := range tr.ExtraArtists {
 				artist.TrackActor(track)
-				track.Record.Actors.AddRole(artist.Name, artist.Role)
+				track.Record.ActorRoles.Add(artist.Name, artist.Role)
 			}
 			for _, artist := range sTrack.ExtraArtists {
 				artist.TrackActor(track)
-				track.Record.Actors.AddRole(artist.Name, artist.Role)
+				track.Record.ActorRoles.Add(artist.Name, artist.Role)
 			}
 		}
 	} else {
@@ -291,7 +289,7 @@ func (tr *track) Track() *md.Track {
 		track.Duration = intutils.NewDurationFromString(tr.Duration)
 		for _, artist := range tr.ExtraArtists {
 			artist.TrackActor(track)
-			track.Record.Actors.AddRole(artist.Name, artist.Role)
+			track.Record.ActorRoles.Add(artist.Name, artist.Role)
 		}
 	}
 	return track
@@ -321,18 +319,18 @@ func (img *image) Cover() *md.PictureInAudio {
 }
 
 // ActorsByRole определяет коллекцию для размещения описания по наименованию роли.
-func ActorsByRole(track *md.Track, roles string) *md.Actors {
-	var ret *md.Actors
+func ActorsByRole(track *md.Track, roles string) *md.ActorRoles {
+	var ret *md.ActorRoles
 	if strings.Contains(roles, "Artwork") ||
 		strings.Contains(roles, "Design") ||
 		strings.Contains(roles, "Photography") {
-		ret = track.Actors
+		ret = &track.ActorRoles
 	} else if strings.Contains(roles, "Composer") || // TODO: проверить!
 		strings.Contains(roles, "Lyricist") ||
 		strings.Contains(roles, "Written-By") {
-		ret = track.Composition.Actors
+		ret = &track.Composition.ActorRoles
 	} else {
-		ret = track.Record.Actors
+		ret = &track.Record.ActorRoles
 	}
 	return ret
 }

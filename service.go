@@ -158,7 +158,7 @@ func (d *Discogs) search(delivery *amqp.Delivery) {
 		}
 	}
 	for _, suggestion := range suggestions {
-		suggestion.Entity.(*md.Release).Optimize()
+		suggestion.Optimize()
 	}
 	// отправка ответа
 	suggestionsJSON, err := json.Marshal(suggestions)
@@ -180,7 +180,7 @@ func (d *Discogs) searchReleaseByID(request *srv.Request) ([]*md.Suggestion, err
 	}
 	return []*md.Suggestion{
 			{
-				Entity:           r,
+				Release:          r,
 				ServiceName:      ServiceName,
 				OnlineSuggeston:  true,
 				SourceSimilarity: 1.,
@@ -207,7 +207,7 @@ func (d *Discogs) searchReleaseByIncompleteData(request *srv.Request) ([]*md.Sug
 			suggestions = append(
 				suggestions,
 				&md.Suggestion{
-					Entity:           r,
+					Release:          r,
 					ServiceName:      ServiceName,
 					OnlineSuggeston:  true,
 					SourceSimilarity: score,
@@ -218,12 +218,12 @@ func (d *Discogs) searchReleaseByIncompleteData(request *srv.Request) ([]*md.Sug
 	log.WithField("results", len(suggestions)).Debug("Preliminary search")
 	// окончательные предложения
 	for i := len(suggestions) - 1; i >= 0; i-- {
-		r := suggestions[i].Entity.(*md.Release)
+		r := suggestions[i].Release
 		if err := d.releaseByID(r.IDs[ServiceName], r); err != nil {
 			return nil, err
 		}
 		if score = release.Compare(r); score > MinSearchFullResult {
-			suggestions[i].Entity = r
+			suggestions[i].Release = r
 			suggestions[i].SourceSimilarity = score
 		} else {
 			suggestions = append(suggestions[:i], suggestions[i+1:]...)
@@ -261,8 +261,10 @@ func (d *Discogs) releaseByID(id string, release *md.Release) error {
 func searchURL(release *md.Release, entityType string) string {
 	ret := APIBaseURL + "database/search?type=" + entityType
 	ret += "&release_title=" + release.Title
-	if performers := release.Actors.Filter(md.IsPerformer); len(*performers) > 0 {
-		ret += "&artist=" + (*performers)[0].Name
+	if performers := release.ActorRoles.Filter(md.IsPerformer); len(performers) > 0 {
+		for actorName := range performers {
+			ret += "&artist=" + string(actorName)
+		}
 	}
 	if len(release.Publishing) > 0 {
 		if len(release.Publishing[0].Name) > 0 {
