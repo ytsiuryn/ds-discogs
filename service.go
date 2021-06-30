@@ -200,6 +200,7 @@ func (d *Discogs) searchReleaseByID(request *Request) ([]*md.Suggestion, error) 
 func (d *Discogs) searchReleaseByIncompleteData(request *Request) ([]*md.Suggestion, error) {
 	var suggestions []*md.Suggestion
 	// params
+	fmt.Printf("%T", request.Params["release"])
 	release, ok := request.Params["release"].(*md.Release)
 	if !ok {
 		return nil, errors.New("Album release description is absent")
