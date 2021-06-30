@@ -21,6 +21,8 @@ github.com/ytsiuryn/ds-audiomd v0.1.4 h1:uE8bzBfYVoVEX5YqR4sFsZGKK330F3Yji57UuCi
 github.com/ytsiuryn/ds-audiomd v0.1.4/go.mod h1:m70zOEAqQLc3bo4dVCaWiLbpYe7bjkIP/iD0RbOSKP8=
 github.com/ytsiuryn/ds-service v0.0.6 h1:pghjZy8Z1nUlaBOeXz0G9FxgfGk5jokA5p92DWZNrOs=
 github.com/ytsiuryn/ds-service v0.0.6/go.mod h1:DO6MNdNalyrJTcRNsYdY8DLyEWJF2ORZfga8voomRQg=
+github.com/ytsiuryn/ds-service v0.0.7 h1:lmyBG1cfKreGpBkUM7ZLYzf0T2V7RpdKauv6U5dlgCA=
+github.com/ytsiuryn/ds-service v0.0.7/go.mod h1:d6xrDGk/Y95CMXwM4PBCKEyd3TYahHdXeOR4yOmJqa0=
 github.com/ytsiuryn/go-collection v0.0.2 h1:/i09VVKL4HJPu+VEdmdIQaYX36Fxm+ltvNVdhlEyjEo=
 github.com/ytsiuryn/go-collection v0.0.2/go.mod h1:nPgGjU7QxWPoHjd88rJT51/SKHJzJFVHbCNFr3XxY7w=
 github.com/ytsiuryn/go-intutils v0.0.2 h1:r2nV3r6TnhGrezcvtfryNkN6mUpAfRo99hvbhwBKo90=
@@ -33,6 +35,8 @@ github.com/ytsiuryn/go-world v0.0.2/go.mod h1:tAb2/7a8OjFVmycmd7HaJ/BNDIN8K7g/K2
 golang.org/x/sys v0.0.0-20191026070338-33540a1f6037/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 h1:RqytpXGR1iVNX7psjB3ff8y7sNFinVFvkx1c8SjBkio=
 golang.org/x/sys v0.0.0-20210616094352-59db8d763f22/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c h1:F1jZWGFhYfh0Ci55sIpILtKKK8p3i2/krTr0H1rg74I=
+golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/text v0.3.6/go.mod h1:5Zoc/QRtKVWzQhOtBMvqHzDpF6irO9z98xDceosuGiQ=
 golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=

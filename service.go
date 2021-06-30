@@ -2,6 +2,7 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -51,6 +52,11 @@ type config struct {
 type Discogs struct {
 	*srv.PollingService
 	conf *config
+}
+
+// Request расширяет базовые функции общей микросерверной структуры запроса.
+type Request struct {
+	srv.Request
 }
 
 // NewDiscogsClient создает объект нового клиента Discogs.
@@ -173,9 +179,12 @@ func (d *Discogs) search(delivery *amqp.Delivery) {
 }
 
 func (d *Discogs) searchReleaseByID(request *srv.Request) ([]*md.Suggestion, error) {
-	id := request.Params["release_id"]
+	id, ok := request.Params["release_id"].(int)
+	if !ok {
+		return nil, errors.New("")
+	}
 	r := md.NewRelease()
-	if err := d.releaseByID(id, r); err != nil {
+	if err := d.releaseByID(strconv.Itoa(id), r); err != nil {
 		return nil, err
 	}
 	return []*md.Suggestion{
@@ -278,4 +287,14 @@ func searchURL(release *md.Release, entityType string) string {
 		ret += "&year=" + strconv.Itoa(int(release.Year))
 	}
 	return ret
+}
+
+// ParseRelease parses input parameters for release request with incomplete data.
+func (rq Request) ParseRelease() (*md.Release, error) {
+	release := md.NewRelease()
+	release, ok := rq.Params["release"].(*md.Release)
+	if !ok {
+		return nil, errors.New("Album release description is absent")
+	}
+	return release, nil
 }

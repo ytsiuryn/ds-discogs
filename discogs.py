@@ -82,7 +82,7 @@ class OnlineDBClient(RPCClient):
 
     def search_by_release(self, release_data):
         return self.call(
-            {"cmd": "search", "params": {"release": json.dumps(release_data)}})
+            {"cmd": "search", "params": {"release": release_data}})
 
 
 class DiscogsClient(OnlineDBClient):
@@ -105,7 +105,7 @@ class TestDiscogs(fastunit.TestCase):
         self.assertEqual(resp["Name"], "discogs")
 
     def test_release_by_id(self):
-        resp = json.loads(self.cl.search_by_release_id("4139588"))
+        resp = json.loads(self.cl.search_by_release_id(4139588))
         self.assertEqual(
             resp[0]["entity"]["title"].lower(),
             "the dark side of the moon")
