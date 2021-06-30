@@ -142,7 +142,7 @@ func (d *Discogs) search(delivery *amqp.Delivery) {
 		return
 	}
 	// прием входного запроса
-	var request srv.Request
+	var request Request
 	err := json.Unmarshal(delivery.Body, &request)
 	if err != nil {
 		d.ErrorResult(delivery, err, "Request")
@@ -178,7 +178,7 @@ func (d *Discogs) search(delivery *amqp.Delivery) {
 	d.Answer(delivery, suggestionsJSON)
 }
 
-func (d *Discogs) searchReleaseByID(request *srv.Request) ([]*md.Suggestion, error) {
+func (d *Discogs) searchReleaseByID(request *Request) ([]*md.Suggestion, error) {
 	id, ok := request.Params["release_id"].(int)
 	if !ok {
 		return nil, errors.New("")
@@ -197,12 +197,12 @@ func (d *Discogs) searchReleaseByID(request *srv.Request) ([]*md.Suggestion, err
 		nil
 }
 
-func (d *Discogs) searchReleaseByIncompleteData(request *srv.Request) ([]*md.Suggestion, error) {
+func (d *Discogs) searchReleaseByIncompleteData(request *Request) ([]*md.Suggestion, error) {
 	var suggestions []*md.Suggestion
 	// params
-	release, err := request.ParseRelease()
-	if err != nil {
-		return nil, err
+	release, ok := request.Params["release"].(*md.Release)
+	if !ok {
+		return nil, errors.New("Album release description is absent")
 	}
 	// discogs release search...
 	var preResult searchResponse
@@ -287,14 +287,4 @@ func searchURL(release *md.Release, entityType string) string {
 		ret += "&year=" + strconv.Itoa(int(release.Year))
 	}
 	return ret
-}
-
-// ParseRelease parses input parameters for release request with incomplete data.
-func (rq Request) ParseRelease() (*md.Release, error) {
-	release := md.NewRelease()
-	release, ok := rq.Params["release"].(*md.Release)
-	if !ok {
-		return nil, errors.New("Album release description is absent")
-	}
-	return release, nil
 }
