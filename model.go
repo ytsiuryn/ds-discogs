@@ -1,4 +1,4 @@
-package client
+package discogs
 
 import (
 	"log"
@@ -156,7 +156,7 @@ type searchResponse struct {
 
 // Search gatheres the common release info results.
 func (sr *searchResponse) Search() []*md.Release {
-	var ret []*md.Release
+	var releases []*md.Release
 	for _, result := range sr.Results {
 		r := md.NewRelease()
 		r.IDs.Add(ServiceName, strconv.Itoa(int(result.ID)))
@@ -171,9 +171,9 @@ func (sr *searchResponse) Search() []*md.Release {
 				},
 			)
 		}
-		ret = append(ret, r)
+		releases = append(releases, r)
 	}
-	return ret
+	return releases
 }
 
 // Master updates release with master page data.

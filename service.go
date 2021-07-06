@@ -1,24 +1,21 @@
-package client
+package discogs
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
+	"os"
+	"os/signal"
 	"strconv"
+	"strings"
+	"syscall"
+	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 
 	md "github.com/ytsiuryn/ds-audiomd"
-	srv "github.com/ytsiuryn/ds-service"
+	srv "github.com/ytsiuryn/ds-microservice"
 )
 
-// Описание сервиса
-const (
-	ServiceSubsystem   = "audio"
-	ServiceName        = "discogs"
-	ServiceDescription = "Discogs client"
-)
+const ServiceName = "discogs"
 
 // Suggestion constants
 const (
@@ -34,69 +31,73 @@ const (
 	// AuthorizeURL    = "https://www.discogs.com/oauth/authorize"
 	// AccessTokenURL  = "https://api.discogs.com/oauth/access_token"
 
-	APIBaseURL    = "https://api.discogs.com/"
+	BaseURL       = "https://api.discogs.com/"
 	RateHeaderKey = "X-Discogs-Ratelimit"
 )
 
-type config struct {
-	Auth struct {
-		App string `yaml:"app"`
-		// Key           string `yaml:"key"`
-		// Secret        string `yaml:"secret"`
-		PersonalToken string `yaml:"personal_token"`
-	}
-	Product bool `yaml:"product"`
-}
-
 // Discogs описывает внутреннее состояние клиента Discogs.
 type Discogs struct {
-	*srv.PollingService
-	conf *config
-}
-
-// Request расширяет базовые функции общей микросерверной структуры запроса.
-type Request struct {
-	srv.Request
+	*srv.Service
+	headers map[string]string
+	poller  *srv.WebPoller
 }
 
 // NewDiscogsClient создает объект нового клиента Discogs.
-func NewDiscogsClient(connstr, optFile string) (*Discogs, error) {
-	conf := config{}
+func NewDiscogsClient(app, token string) *Discogs {
+	d := &Discogs{
+		Service: srv.NewService(ServiceName),
+		headers: map[string]string{
+			"User-Agent":    app,
+			"Authorization": "Discogs token=" + token,
+		},
+		poller: srv.NewWebPoller(time.Second)}
 
-	srv.ReadConfig(optFile, &conf)
+	d.SetVersionInfo(
+		srv.ServiceInfo{
+			Subsystem:   "audio",
+			Name:        ServiceName,
+			Description: "Discogs client"})
 
-	log.SetLevel(srv.LogLevel(conf.Product))
-
-	cl := &Discogs{
-		conf: &conf,
-		PollingService: srv.NewPollingService(
-			map[string]string{
-				"User-Agent":    conf.Auth.App,
-				"Authorization": "Discogs token=" + conf.Auth.PersonalToken,
-			}),
-	}
-	cl.ConnectToMessageBroker(connstr, ServiceName)
-
-	return cl, nil
+	return d
 }
 
 // TestPollingFrequency выполняет определение частоты опроса сервера на примере тестового запроса.
 // Периодичность расчитывается в наносекундах.
-func (d *Discogs) TestPollingFrequency() error {
-	resp, err := d.TestResource(APIBaseURL)
+func (d *Discogs) TestPollingFrequency() {
+	resource := d.poller.Head(BaseURL, d.headers)
+	v := resource.Response.Header["X-Discogs-Ratelimit"]
+	rate, err := strconv.Atoi(string(v[0]))
 	if err != nil {
-		return err
+		d.LogOnError(err, "header 'X-Discogs-Ratelimit' conversion")
+		return
 	}
-	v, ok := resp.Header[RateHeaderKey]
-	if !ok {
-		return fmt.Errorf("header '%s' does not exists", RateHeaderKey)
-	}
-	rate, err := strconv.Atoi(v[0])
-	if err != nil {
-		return err
-	}
-	d.SetPollingFrequency(int64(60 * 1000_000_000 / int64(rate)))
-	return nil
+	pollingInterval := time.Duration(60*1000/rate) * time.Millisecond
+
+	d.poller.SetPollingInterval(pollingInterval)
+	d.Log.Info("Polling interval: ", pollingInterval)
+}
+
+// Start запускает Web Poller и цикл обработки взодящих запросов.
+// Контролирует сигнал завершения цикла и последующего освобождения ресурсов микросервиса.
+func (d *Discogs) Start(msgs <-chan amqp.Delivery) {
+	d.poller.Start()
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		var req AudioOnlineRequest
+		for delivery := range msgs {
+			if err := json.Unmarshal(delivery.Body, &req); err != nil {
+				d.AnswerWithError(&delivery, err, "Message dispatcher")
+				continue
+			}
+			d.logRequest(&req)
+			d.RunCmd(&req, &delivery)
+		}
+	}()
+	d.Log.Info("Awaiting RPC requests")
+	go d.TestPollingFrequency()
+	<-c
+	d.Cleanup()
 }
 
 // Cleanup ..
@@ -104,87 +105,54 @@ func (d *Discogs) Cleanup() {
 	d.Service.Cleanup()
 }
 
-// RunCmdByName выполняет команды и возвращает результат клиенту в виде JSON-сообщения.
-func (d *Discogs) RunCmdByName(cmd string, delivery *amqp.Delivery) {
-	switch cmd {
-	case "search":
-		go d.search(delivery)
-	case "info":
-		version := srv.Version{
-			Subsystem:   ServiceSubsystem,
-			Name:        ServiceName,
-			Description: ServiceDescription,
-		}
-		go d.Service.Info(delivery, &version)
-	default:
-		d.Service.RunCommonCmd(cmd, delivery)
+// Отображение сведений о выполняемом запросе.
+func (d *Discogs) logRequest(req *AudioOnlineRequest) {
+	if req.Release != nil {
+		d.Log.WithField("args", req.Release).Debug(req.Cmd + "()")
+	} else {
+		d.Log.Debug(req.Cmd + "()")
 	}
 }
 
-// Обрабатываются следующие сущности: release, actor и label.
-//
-// Параметры JSON-запроса:
-//
-// - для release используются ключи "release_id" или "release" (по частичным данным в ds.audio.metadata.Release)
-//
-// - для actor используются ключи "actor_id" или "actor" (по частичным данным в ds.audio.metadata.Actor)
-//
-// - для label используются ключи "label_id" или "label" (по частичным данным в ds.audio.metadata.ReleaseLabel)
-func (d *Discogs) search(delivery *amqp.Delivery) {
-	if d.Idle {
-		res := []*md.Suggestion{}
-		suggestionsJSON, err := json.Marshal(res)
-		if err != nil {
-			d.ErrorResult(delivery, err, "Response")
-			return
-		}
-		d.Answer(delivery, suggestionsJSON)
-		return
+// RunCmd вызывает командам  запроса методы сервиса и возвращает результат клиенту.
+func (d *Discogs) RunCmd(req *AudioOnlineRequest, delivery *amqp.Delivery) {
+	switch req.Cmd {
+	case "release":
+		go d.release(req, delivery)
+	default:
+		d.Service.RunCmd(req.Cmd, delivery)
 	}
-	// прием входного запроса
-	var request Request
-	err := json.Unmarshal(delivery.Body, &request)
-	if err != nil {
-		d.ErrorResult(delivery, err, "Request")
-		return
-	}
+}
+
+// Обрабатываются следующие сущности: release (actor и label будут добавлены позже).
+func (d *Discogs) release(request *AudioOnlineRequest, delivery *amqp.Delivery) {
 	// разбор параметров входного запроса
+	var err error
 	var suggestions []*md.Suggestion
-	if _, ok := request.Params["release_id"]; ok {
-		suggestions, err = d.searchReleaseByID(&request)
-		if err != nil {
-			d.ErrorResult(delivery, err, "Release by ID")
-			return
-		}
-	} else if _, ok := request.Params["release"]; ok {
-		suggestions, err = d.searchReleaseByIncompleteData(&request)
-		if err != nil {
-			d.ErrorResult(delivery, err, "Release by incomplete data")
-			return
-		}
+	if _, ok := request.Release.IDs[ServiceName]; ok {
+		suggestions, err = d.searchReleaseByID(request.Release.IDs[ServiceName])
+	} else {
+		suggestions, err = d.searchReleaseByIncompleteData(request.Release)
+	}
+	if err != nil {
+		d.AnswerWithError(delivery, err, "Getting release data")
+		return
 	}
 	for _, suggestion := range suggestions {
 		suggestion.Optimize()
 	}
 	// отправка ответа
-	suggestionsJSON, err := json.Marshal(suggestions)
-	if err != nil {
-		d.ErrorResult(delivery, err, "Response")
-		return
+	if suggestionsJSON, err := json.Marshal(suggestions); err != nil {
+		d.AnswerWithError(delivery, err, "Response")
+	} else {
+		d.Log.Debug(string(suggestionsJSON))
+		d.Answer(delivery, suggestionsJSON)
 	}
-	if !d.conf.Product {
-		log.Println(string(suggestionsJSON))
-	}
-	d.Answer(delivery, suggestionsJSON)
 }
 
-func (d *Discogs) searchReleaseByID(request *Request) ([]*md.Suggestion, error) {
-	id, ok := request.Params["release_id"].(int)
-	if !ok {
-		return nil, errors.New("")
-	}
+func (d *Discogs) searchReleaseByID(id string) ([]*md.Suggestion, error) {
 	r := md.NewRelease()
-	if err := d.releaseByID(strconv.Itoa(id), r); err != nil {
+	if err := d.releaseByID(id, r); err != nil {
 		return nil, err
 	}
 	return []*md.Suggestion{
@@ -197,17 +165,11 @@ func (d *Discogs) searchReleaseByID(request *Request) ([]*md.Suggestion, error) 
 		nil
 }
 
-func (d *Discogs) searchReleaseByIncompleteData(request *Request) ([]*md.Suggestion, error) {
+func (d *Discogs) searchReleaseByIncompleteData(release *md.Release) ([]*md.Suggestion, error) {
 	var suggestions []*md.Suggestion
-	// params
-	fmt.Printf("%T", request.Params["release"])
-	release, ok := request.Params["release"].(*md.Release)
-	if !ok {
-		return nil, errors.New("Album release description is absent")
-	}
 	// discogs release search...
 	var preResult searchResponse
-	if err := d.LoadAndDecode(searchURL(release, "release"), &preResult); err != nil {
+	if err := d.poller.Decode(searchURL(release, "release"), d.headers, &preResult); err != nil {
 		return nil, err
 	}
 	var score float64
@@ -225,7 +187,7 @@ func (d *Discogs) searchReleaseByIncompleteData(request *Request) ([]*md.Suggest
 		}
 	}
 	suggestions = md.BestNResults(suggestions, MaxPreSuggestions)
-	log.WithField("results", len(suggestions)).Debug("Preliminary search")
+	d.Log.WithField("results", len(suggestions)).Debug("Preliminary search")
 	// окончательные предложения
 	for i := len(suggestions) - 1; i >= 0; i-- {
 		r := suggestions[i].Release
@@ -240,21 +202,21 @@ func (d *Discogs) searchReleaseByIncompleteData(request *Request) ([]*md.Suggest
 		}
 	}
 	suggestions = md.BestNResults(suggestions, MaxSuggestions)
-	log.WithField("results", len(suggestions)).Debug("Suggestions")
+	d.Log.WithField("results", len(suggestions)).Debug("Suggestions")
 	return suggestions, nil
 }
 
 func (d *Discogs) releaseByID(id string, release *md.Release) error {
 	// сведения о релизе...
 	var releaseResp releaseInfo
-	if err := d.LoadAndDecode(APIBaseURL+"releases/"+id, &releaseResp); err != nil {
+	if err := d.poller.Decode(BaseURL+"releases/"+id, d.headers, &releaseResp); err != nil {
 		return err
 	}
 	releaseResp.Release(release)
 	// сведения о мастер-релизе...
 	if releaseResp.MasterURL != "" {
 		var masterResp masterInfo
-		if err := d.LoadAndDecode(releaseResp.MasterURL, &masterResp); err != nil {
+		if err := d.poller.Decode(releaseResp.MasterURL, d.headers, &masterResp); err != nil {
 			return err
 		}
 		masterResp.Master(release)
@@ -269,23 +231,30 @@ func (d *Discogs) releaseByID(id string, release *md.Release) error {
 // GET /database/search?q={query}&{?type,title,release_title,credit,artist,anv,label,genre,style,country,year,format,catno,barcode,track,submitter,contributor}
 // type: release, master, artist, label
 func searchURL(release *md.Release, entityType string) string {
-	ret := APIBaseURL + "database/search?type=" + entityType
-	ret += "&release_title=" + release.Title
+	builder := strings.Builder{}
+	builder.WriteString(BaseURL)
+	builder.WriteString("database/search?type=")
+	builder.WriteString(entityType)
+	builder.WriteString(release.Title)
 	if performers := release.ActorRoles.Filter(md.IsPerformer); len(performers) > 0 {
 		for actorName := range performers {
-			ret += "&artist=" + string(actorName)
+			builder.WriteString("&artist=")
+			builder.WriteString(string(actorName))
 		}
 	}
 	if len(release.Publishing) > 0 {
 		if len(release.Publishing[0].Name) > 0 {
-			ret += "&label=" + release.Publishing[0].Name
+			builder.WriteString("&label=")
+			builder.WriteString(release.Publishing[0].Name)
 		}
 		if len(release.Publishing[0].Catno) > 0 {
-			ret += "&catno=" + release.Publishing[0].Catno
+			builder.WriteString("&catno=")
+			builder.WriteString(release.Publishing[0].Catno)
 		}
 	}
 	if release.Year != 0 {
-		ret += "&year=" + strconv.Itoa(int(release.Year))
+		builder.WriteString("&year=")
+		builder.WriteString(strconv.Itoa(int(release.Year)))
 	}
-	return ret
+	return builder.String()
 }
