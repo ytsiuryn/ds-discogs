@@ -65,6 +65,9 @@ func NewDiscogsClient(app, token string) *Discogs {
 // Периодичность расчитывается в наносекундах.
 func (d *Discogs) TestPollingFrequency() {
 	resource := d.poller.Head(BaseURL, d.headers)
+	if resource.Err != nil {
+		srv.FailOnError(resource.Err, "Polling frequency testing")
+	}
 	v := resource.Response.Header["X-Discogs-Ratelimit"]
 	rate, err := strconv.Atoi(string(v[0]))
 	if err != nil {
@@ -108,7 +111,24 @@ func (d *Discogs) Cleanup() {
 // Отображение сведений о выполняемом запросе.
 func (d *Discogs) logRequest(req *AudioOnlineRequest) {
 	if req.Release != nil {
-		d.Log.WithField("args", req.Release).Debug(req.Cmd + "()")
+		if _, ok := req.Release.IDs[ServiceName]; ok {
+			d.Log.WithField("args", req.Release.IDs[ServiceName]).Debug(req.Cmd + "()")
+		} else { // TODO: может стоит офомить метод String() для md.Release?
+			args := strings.Builder{}
+			actor := string(req.Release.ActorRoles.First())
+			if actor != "" {
+				args.WriteString(actor)
+			}
+			if req.Release.Title != "" {
+				args.WriteRune('-')
+				args.WriteString(req.Release.Title)
+			}
+			if req.Release.Year != 0 {
+				args.WriteRune('-')
+				args.WriteString(strconv.Itoa(req.Release.Year))
+			}
+			d.Log.WithField("args", args.String()).Debug(req.Cmd + "()")
+		}
 	} else {
 		d.Log.Debug(req.Cmd + "()")
 	}
