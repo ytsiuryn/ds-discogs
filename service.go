@@ -84,11 +84,14 @@ func (d *Discogs) TestPollingFrequency() {
 // Контролирует сигнал завершения цикла и последующего освобождения ресурсов микросервиса.
 func (d *Discogs) Start(msgs <-chan amqp.Delivery) {
 	d.poller.Start()
+	go d.TestPollingFrequency()
+
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
 	go func() {
-		var req AudioOnlineRequest
 		for delivery := range msgs {
+			var req AudioOnlineRequest
 			if err := json.Unmarshal(delivery.Body, &req); err != nil {
 				d.AnswerWithError(&delivery, err, "Message dispatcher")
 				continue
@@ -97,9 +100,10 @@ func (d *Discogs) Start(msgs <-chan amqp.Delivery) {
 			d.RunCmd(&req, &delivery)
 		}
 	}()
+
 	d.Log.Info("Awaiting RPC requests")
-	go d.TestPollingFrequency()
 	<-c
+
 	d.Cleanup()
 }
 
@@ -114,20 +118,17 @@ func (d *Discogs) logRequest(req *AudioOnlineRequest) {
 		if _, ok := req.Release.IDs[ServiceName]; ok {
 			d.Log.WithField("args", req.Release.IDs[ServiceName]).Debug(req.Cmd + "()")
 		} else { // TODO: может стоит офомить метод String() для md.Release?
-			args := strings.Builder{}
-			actor := string(req.Release.ActorRoles.First())
-			if actor != "" {
-				args.WriteString(actor)
+			var args []string
+			if actor := string(req.Release.ActorRoles.Filter(md.IsPerformer).First()); actor != "" {
+				args = append(args, actor)
 			}
 			if req.Release.Title != "" {
-				args.WriteRune('-')
-				args.WriteString(req.Release.Title)
+				args = append(args, req.Release.Title)
 			}
 			if req.Release.Year != 0 {
-				args.WriteRune('-')
-				args.WriteString(strconv.Itoa(req.Release.Year))
+				args = append(args, strconv.Itoa(req.Release.Year))
 			}
-			d.Log.WithField("args", args.String()).Debug(req.Cmd + "()")
+			d.Log.WithField("args", strings.Join(args, "-")).Debug(req.Cmd + "()")
 		}
 	} else {
 		d.Log.Debug(req.Cmd + "()")
