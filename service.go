@@ -42,8 +42,8 @@ type Discogs struct {
 	poller  *srv.WebPoller
 }
 
-// NewDiscogsClient создает объект нового клиента Discogs.
-func NewDiscogsClient(app, token string) *Discogs {
+// New создает объект нового клиента Discogs.
+func New(app, token string) *Discogs {
 	d := &Discogs{
 		Service: srv.NewService(ServiceName),
 		headers: map[string]string{
@@ -61,12 +61,12 @@ func NewDiscogsClient(app, token string) *Discogs {
 	return d
 }
 
-// TestPollingFrequency выполняет определение частоты опроса сервера на примере тестового запроса.
+// TestPollingInterval выполняет определение частоты опроса сервера на примере тестового запроса.
 // Периодичность расчитывается в наносекундах.
-func (d *Discogs) TestPollingFrequency() {
+func (d *Discogs) TestPollingInterval() {
 	resource := d.poller.Head(BaseURL, d.headers)
 	if resource.Err != nil {
-		srv.FailOnError(resource.Err, "Polling frequency testing")
+		srv.FailOnError(resource.Err, "Polling interval testing")
 	}
 	v := resource.Response.Header["X-Discogs-Ratelimit"]
 	rate, err := strconv.Atoi(string(v[0]))
@@ -84,7 +84,7 @@ func (d *Discogs) TestPollingFrequency() {
 // Контролирует сигнал завершения цикла и последующего освобождения ресурсов микросервиса.
 func (d *Discogs) Start(msgs <-chan amqp.Delivery) {
 	d.poller.Start()
-	go d.TestPollingFrequency()
+	go d.TestPollingInterval()
 
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
@@ -104,11 +104,11 @@ func (d *Discogs) Start(msgs <-chan amqp.Delivery) {
 	d.Log.Info("Awaiting RPC requests")
 	<-c
 
-	d.Cleanup()
+	d.cleanup()
 }
 
 // Cleanup ..
-func (d *Discogs) Cleanup() {
+func (d *Discogs) cleanup() {
 	d.Service.Cleanup()
 }
 

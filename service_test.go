@@ -77,7 +77,7 @@ func startTestService(ctx context.Context) {
 	mut.Lock()
 	defer mut.Unlock()
 	if testService == nil {
-		testService = NewDiscogsClient(
+		testService = New(
 			os.Getenv("DISCOGS_APP"),
 			os.Getenv("DISCOGS_PERSONAL_TOKEN"))
 		msgs := testService.ConnectToMessageBroker("amqp://guest:guest@localhost:5672/")
