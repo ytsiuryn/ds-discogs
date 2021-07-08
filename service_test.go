@@ -2,7 +2,6 @@ package discogs
 
 import (
 	"context"
-	"encoding/json"
 	"os"
 	"sync"
 	"testing"
@@ -27,15 +26,6 @@ func TestBaseServiceCommands(t *testing.T) {
 	cl.Request(ServiceName, correlationID, data)
 	respData := cl.Result(correlationID)
 	if len(respData) != 0 {
-		t.Fail()
-	}
-
-	correlationID, data, _ = srv.CreateCmdRequest("info")
-	cl.Request(ServiceName, correlationID, data)
-	info := srv.ServiceInfo{}
-	respData = cl.Result(correlationID)
-	json.Unmarshal(respData, &info)
-	if info.Name != ServiceName {
 		t.Fail()
 	}
 

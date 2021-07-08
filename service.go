@@ -44,21 +44,13 @@ type Discogs struct {
 
 // New создает объект нового клиента Discogs.
 func New(app, token string) *Discogs {
-	d := &Discogs{
+	return &Discogs{
 		Service: srv.NewService(ServiceName),
 		headers: map[string]string{
 			"User-Agent":    app,
 			"Authorization": "Discogs token=" + token,
 		},
 		poller: srv.NewWebPoller(time.Second)}
-
-	d.SetServiceInfo(
-		srv.ServiceInfo{
-			Subsystem:   "audio",
-			Name:        ServiceName,
-			Description: "Discogs client"})
-
-	return d
 }
 
 // TestPollingInterval выполняет определение частоты опроса сервера на примере тестового запроса.
