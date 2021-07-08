@@ -52,7 +52,7 @@ func New(app, token string) *Discogs {
 		},
 		poller: srv.NewWebPoller(time.Second)}
 
-	d.SetVersionInfo(
+	d.SetServiceInfo(
 		srv.ServiceInfo{
 			Subsystem:   "audio",
 			Name:        ServiceName,

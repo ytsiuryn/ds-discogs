@@ -18,6 +18,8 @@ github.com/ytsiuryn/ds-microservice v0.5.2 h1:VRB+NJuD6hF60Z0zqr+Bl79+Ra2DHq4SuL
 github.com/ytsiuryn/ds-microservice v0.5.2/go.mod h1:dPB7U5CKRz9jAd+Ou3RvjCg7YwepgPV7ZairacqwUKU=
 github.com/ytsiuryn/ds-microservice v0.5.3 h1:25cTAP24cvifWqrad9D6Rke40e2VdUheIiamFfQ5BeQ=
 github.com/ytsiuryn/ds-microservice v0.5.3/go.mod h1:dPB7U5CKRz9jAd+Ou3RvjCg7YwepgPV7ZairacqwUKU=
+github.com/ytsiuryn/ds-microservice v0.6.0 h1:zMxFZRF1zaeDw819eR0N50p6tdxLSBWUYiI0dlC0Nj4=
+github.com/ytsiuryn/ds-microservice v0.6.0/go.mod h1:xJCBFlFRPe9PXFfs7hVePrfXMp3tfUw70OUDBu15Y3I=
 github.com/ytsiuryn/go-collection v0.0.2 h1:/i09VVKL4HJPu+VEdmdIQaYX36Fxm+ltvNVdhlEyjEo=
 github.com/ytsiuryn/go-collection v0.0.2/go.mod h1:nPgGjU7QxWPoHjd88rJT51/SKHJzJFVHbCNFr3XxY7w=
 github.com/ytsiuryn/go-intutils v0.0.2 h1:r2nV3r6TnhGrezcvtfryNkN6mUpAfRo99hvbhwBKo90=
