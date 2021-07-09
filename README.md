@@ -40,19 +40,29 @@
 		    "msg-server",
 		    "amqp://guest:guest@localhost:5672/",
 		    "Message server connection string")
-	    flag.Parse()
+
+		product := flag.Bool(
+			"product",
+			false,
+			"product-режим запуска сервиса")
+
+		flag.Parse()
 
 	    log.Info(fmt.Sprintf("%s starting..", discogs.ServiceName))
 
-	    cl, err := discogs.NewDiscogsClient(*connstr)
-	    srv.FailOnError(err, "Failed to create Discogs client")
+	    cl := discogs.New(
+			os.Getenv("DISCOGS_APP"),
+			os.Getenv("DISCOGS_PERSONAL_TOKEN"))
 
-	    err = cl.TestPollingFrequency()
-	    srv.FailOnError(err, "Failed to test polling frequency")
+	    msgs := testService.ConnectToMessageBroker("amqp://guest:guest@localhost:5672/")
 
-	    defer cl.Close()
+		if *product {
+			reader.Log.SetLevel(log.InfoLevel)
+		} else {
+			reader.Log.SetLevel(log.DebugLevel)
+		}
 
-	    cl.Dispatch(cl)
+		cl.Start(msgs)
     }
 ```
 

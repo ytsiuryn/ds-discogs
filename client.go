@@ -6,7 +6,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	md "github.com/ytsiuryn/ds-audiomd"
-	srv "github.com/ytsiuryn/ds-microservice"
 )
 
 type AudioOnlineRequest struct {
@@ -14,11 +13,6 @@ type AudioOnlineRequest struct {
 	Release *md.Release `json:"release"`
 	// Actor
 	// *md.Publishing
-}
-
-type AudioOnlineDBClient struct {
-	*srv.RPCClient
-	req *AudioOnlineRequest
 }
 
 // CreateReleaseRequest формирует данные запроса поиска релиза по указанным метаданным.

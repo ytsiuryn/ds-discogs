@@ -208,7 +208,6 @@ func (d *Discogs) searchReleaseByIncompleteData(release *md.Release) ([]*md.Sugg
 			return nil, err
 		}
 		if score = release.Compare(r); score > MinSearchFullResult {
-			suggestions[i].Release = r
 			suggestions[i].SourceSimilarity = score
 		} else {
 			suggestions = append(suggestions[:i], suggestions[i+1:]...)
