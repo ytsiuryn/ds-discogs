@@ -6,6 +6,8 @@ import (
 	"sync"
 	"testing"
 
+	log "github.com/sirupsen/logrus"
+
 	md "github.com/ytsiuryn/ds-audiomd"
 	srv "github.com/ytsiuryn/ds-microservice"
 )
@@ -71,7 +73,7 @@ func startTestService(ctx context.Context) {
 			os.Getenv("DISCOGS_APP"),
 			os.Getenv("DISCOGS_PERSONAL_TOKEN"))
 		msgs := testService.ConnectToMessageBroker("amqp://guest:guest@localhost:5672/")
-		// defer test.Cleanup()
+		testService.Log.SetLevel(log.DebugLevel)
 		go testService.Start(msgs)
 	}
 }

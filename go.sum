@@ -12,16 +12,6 @@ github.com/stretchr/testify v1.2.2 h1:bSDNvY7ZPG5RlJ8otE/7V6gMiyenm9RtJ7IUVIAoJ1
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/ytsiuryn/ds-audiomd v0.1.4 h1:uE8bzBfYVoVEX5YqR4sFsZGKK330F3Yji57UuCi6MOk=
 github.com/ytsiuryn/ds-audiomd v0.1.4/go.mod h1:m70zOEAqQLc3bo4dVCaWiLbpYe7bjkIP/iD0RbOSKP8=
-github.com/ytsiuryn/ds-microservice v0.5.1 h1:OPOpRdl3xI0EB7nhhYfI4CVdRG2VGl1Y5G+DBeHpIf4=
-github.com/ytsiuryn/ds-microservice v0.5.1/go.mod h1:dPB7U5CKRz9jAd+Ou3RvjCg7YwepgPV7ZairacqwUKU=
-github.com/ytsiuryn/ds-microservice v0.5.2 h1:VRB+NJuD6hF60Z0zqr+Bl79+Ra2DHq4SuL4Q9REsgNQ=
-github.com/ytsiuryn/ds-microservice v0.5.2/go.mod h1:dPB7U5CKRz9jAd+Ou3RvjCg7YwepgPV7ZairacqwUKU=
-github.com/ytsiuryn/ds-microservice v0.5.3 h1:25cTAP24cvifWqrad9D6Rke40e2VdUheIiamFfQ5BeQ=
-github.com/ytsiuryn/ds-microservice v0.5.3/go.mod h1:dPB7U5CKRz9jAd+Ou3RvjCg7YwepgPV7ZairacqwUKU=
-github.com/ytsiuryn/ds-microservice v0.6.0 h1:zMxFZRF1zaeDw819eR0N50p6tdxLSBWUYiI0dlC0Nj4=
-github.com/ytsiuryn/ds-microservice v0.6.0/go.mod h1:xJCBFlFRPe9PXFfs7hVePrfXMp3tfUw70OUDBu15Y3I=
-github.com/ytsiuryn/ds-microservice v0.7.0 h1:mVcZ5HG9gmN+CuDWZVEgcYi8v7mDC0JGV5fh9NP+lTg=
-github.com/ytsiuryn/ds-microservice v0.7.0/go.mod h1:xJCBFlFRPe9PXFfs7hVePrfXMp3tfUw70OUDBu15Y3I=
 github.com/ytsiuryn/ds-microservice v0.7.1 h1:BaSG+PzwGjOXFj7sDYoqEceRGgv1Gb/mDHLmihV68xc=
 github.com/ytsiuryn/ds-microservice v0.7.1/go.mod h1:xJCBFlFRPe9PXFfs7hVePrfXMp3tfUw70OUDBu15Y3I=
 github.com/ytsiuryn/go-collection v0.0.2 h1:/i09VVKL4HJPu+VEdmdIQaYX36Fxm+ltvNVdhlEyjEo=

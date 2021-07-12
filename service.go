@@ -99,7 +99,6 @@ func (d *Discogs) Start(msgs <-chan amqp.Delivery) {
 	d.cleanup()
 }
 
-// Cleanup ..
 func (d *Discogs) cleanup() {
 	d.Service.Cleanup()
 }
@@ -108,7 +107,7 @@ func (d *Discogs) cleanup() {
 func (d *Discogs) logRequest(req *AudioOnlineRequest) {
 	if req.Release != nil {
 		if _, ok := req.Release.IDs[ServiceName]; ok {
-			d.Log.WithField("args", req.Release.IDs[ServiceName]).Debug(req.Cmd + "()")
+			d.Log.WithField("args", req.Release.IDs[ServiceName]).Info(req.Cmd + "()")
 		} else { // TODO: может стоит офомить метод String() для md.Release?
 			var args []string
 			if actor := string(req.Release.ActorRoles.Filter(md.IsPerformer).First()); actor != "" {
@@ -120,10 +119,10 @@ func (d *Discogs) logRequest(req *AudioOnlineRequest) {
 			if req.Release.Year != 0 {
 				args = append(args, strconv.Itoa(req.Release.Year))
 			}
-			d.Log.WithField("args", strings.Join(args, "-")).Debug(req.Cmd + "()")
+			d.Log.WithField("args", strings.Join(args, "-")).Info(req.Cmd + "()")
 		}
 	} else {
-		d.Log.Debug(req.Cmd + "()")
+		d.Log.Info(req.Cmd + "()")
 	}
 }
 
