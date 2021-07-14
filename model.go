@@ -226,6 +226,7 @@ func (ai *releaseInfo) Release(r *md.Release) {
 		r.ReleaseRepeat.DecodeSlice(&fmt.Descriptions)
 		r.ReleaseRemake.DecodeSlice(&fmt.Descriptions)
 		r.ReleaseOrigin.DecodeSlice(&fmt.Descriptions)
+		r.Disc(i + 1) // контроль на случай, если диск не добавлен из-за пустового списка треков
 		r.Discs[i].Format = fmt.DiscFormat()
 		r.TotalDiscs++
 	}
