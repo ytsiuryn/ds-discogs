@@ -173,7 +173,6 @@ func (d *Discogs) searchReleaseByID(id string) ([]*md.Suggestion, error) {
 			{
 				Release:          r,
 				ServiceName:      ServiceName,
-				OnlineSuggeston:  true,
 				SourceSimilarity: 1.,
 			}},
 		nil
@@ -195,7 +194,6 @@ func (d *Discogs) searchReleaseByIncompleteData(release *md.Release) ([]*md.Sugg
 				&md.Suggestion{
 					Release:          r,
 					ServiceName:      ServiceName,
-					OnlineSuggeston:  true,
 					SourceSimilarity: score,
 				})
 		}

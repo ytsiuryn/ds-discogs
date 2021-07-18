@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 
 	md "github.com/ytsiuryn/ds-audiomd"
 	srv "github.com/ytsiuryn/ds-microservice"
@@ -27,17 +28,13 @@ func TestBaseServiceCommands(t *testing.T) {
 	correlationID, data, _ := srv.CreateCmdRequest("ping")
 	cl.Request(ServiceName, correlationID, data)
 	respData := cl.Result(correlationID)
-	if len(respData) != 0 {
-		t.Fail()
-	}
+	assert.Equal(t, len(respData), 0)
 
 	correlationID, data, _ = srv.CreateCmdRequest("x")
 	cl.Request(ServiceName, correlationID, data)
 	vInfo, _ := srv.ParseErrorAnswer(cl.Result(correlationID))
 	// {"error": "Unknown command: x", "context": "Message dispatcher"}
-	if vInfo.Error != "Unknown command: x" {
-		t.Fail()
-	}
+	assert.Equal(t, vInfo.Error, "Unknown command: x")
 }
 
 func TestSearchRelease(t *testing.T) {
@@ -60,9 +57,8 @@ func TestSearchRelease(t *testing.T) {
 
 	suggestions, _ := ParseReleaseAnswer(cl.Result(correlationID))
 
-	if len(suggestions) == 0 || suggestions[0].Release.Title != "The Dark Side Of The Moon" {
-		t.Fail()
-	}
+	assert.NotEmpty(t, suggestions)
+	assert.Equal(t, suggestions[0].Release.Title, "The Dark Side Of The Moon")
 }
 
 func startTestService(ctx context.Context) {
