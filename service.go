@@ -142,21 +142,19 @@ func (d *Discogs) RunCmd(req *AudioOnlineRequest, delivery *amqp.Delivery) {
 func (d *Discogs) release(request *AudioOnlineRequest, delivery *amqp.Delivery) {
 	// разбор параметров входного запроса
 	var err error
-	var suggestions []*md.Suggestion
+	var set *md.SuggestionSet
 	if _, ok := request.Release.IDs[ServiceName]; ok {
-		suggestions, err = d.searchReleaseByID(request.Release.IDs[ServiceName])
+		set, err = d.searchReleaseByID(request.Release.IDs[ServiceName])
 	} else {
-		suggestions, err = d.searchReleaseByIncompleteData(request.Release)
+		set, err = d.searchReleaseByIncompleteData(request.Release)
 	}
 	if err != nil {
 		d.AnswerWithError(delivery, err, "Getting release data")
 		return
 	}
-	for _, suggestion := range suggestions {
-		suggestion.Optimize()
-	}
+	set.Optimize()
 	// отправка ответа
-	if suggestionsJSON, err := json.Marshal(suggestions); err != nil {
+	if suggestionsJSON, err := json.Marshal(set); err != nil {
 		d.AnswerWithError(delivery, err, "Response")
 	} else {
 		d.Log.Debug(string(suggestionsJSON))
@@ -164,21 +162,22 @@ func (d *Discogs) release(request *AudioOnlineRequest, delivery *amqp.Delivery) 
 	}
 }
 
-func (d *Discogs) searchReleaseByID(id string) ([]*md.Suggestion, error) {
+func (d *Discogs) searchReleaseByID(id string) (*md.SuggestionSet, error) {
 	r := md.NewRelease()
 	if err := d.releaseByID(id, r); err != nil {
 		return nil, err
 	}
-	return []*md.Suggestion{
-			{
-				Release:          r,
-				ServiceName:      ServiceName,
-				SourceSimilarity: 1.,
-			}},
-		nil
+	set := md.NewSuggestionSet()
+	set.Suggestions = []*md.Suggestion{
+		{
+			Release:          r,
+			ServiceName:      ServiceName,
+			SourceSimilarity: 1.,
+		}}
+	return set, nil
 }
 
-func (d *Discogs) searchReleaseByIncompleteData(release *md.Release) ([]*md.Suggestion, error) {
+func (d *Discogs) searchReleaseByIncompleteData(release *md.Release) (*md.SuggestionSet, error) {
 	var suggestions []*md.Suggestion
 	// discogs release search...
 	var preResult searchResponse
@@ -214,7 +213,11 @@ func (d *Discogs) searchReleaseByIncompleteData(release *md.Release) ([]*md.Sugg
 	}
 	suggestions = md.BestNResults(suggestions, MaxSuggestions)
 	d.Log.WithField("results", len(suggestions)).Debug("Suggestions")
-	return suggestions, nil
+
+	set := md.NewSuggestionSet()
+	set.Suggestions = suggestions
+
+	return set, nil
 }
 
 func (d *Discogs) releaseByID(id string, release *md.Release) error {

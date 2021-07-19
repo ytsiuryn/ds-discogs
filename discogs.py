@@ -107,13 +107,13 @@ class TestDiscogs(fastunit.TestCase):
     def test_release_by_id(self):
         resp = json.loads(self.cl.search_by_release_id(4139588))
         self.assertEqual(
-            resp[0]["entity"]["title"].lower(),
+            resp["suggestions"][0]["release"]["title"].lower(),
             "the dark side of the moon")
 
     def test_search_by_release(self):
         resp = json.loads(self.cl.search_by_release(incomplete_data))
         self.assertEqual(
-            resp[0]["entity"]["title"].lower(),
+            resp["suggestions"][0]["release"]["title"].lower(),
             "the dark side of the moon")
 
 
