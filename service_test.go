@@ -3,53 +3,51 @@ package discogs
 import (
 	"context"
 	"os"
-	"sync"
 	"testing"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 
 	md "github.com/ytsiuryn/ds-audiomd"
 	srv "github.com/ytsiuryn/ds-microservice"
 )
 
-var mut sync.Mutex
-var testService *Discogs
-
-func TestBaseServiceCommands(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	startTestService(ctx)
-
-	cl := srv.NewRPCClient()
-	defer cl.Close()
-
-	correlationID, data, err := srv.CreateCmdRequest("ping")
-	require.NoError(t, err)
-	cl.Request(ServiceName, correlationID, data)
-	respData := cl.Result(correlationID)
-	assert.Equal(t, len(respData), 0)
-
-	correlationID, data, err = srv.CreateCmdRequest("x")
-	require.NoError(t, err)
-	cl.Request(ServiceName, correlationID, data)
-	vInfo, err := srv.ParseErrorAnswer(cl.Result(correlationID))
-	require.NoError(t, err)
-	// {"error": "Unknown command: x", "context": "Message dispatcher"}
-	assert.Equal(t, vInfo.Error, "Unknown command: x")
+type DiscogsTestSuite struct {
+	suite.Suite
+	cl     *srv.RPCClient
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
-func TestSearchRelease(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+func (suite *DiscogsTestSuite) SetupSuite() {
+	suite.ctx, suite.cancel = context.WithCancel(context.Background())
+	suite.startTestService(suite.ctx)
+	suite.cl = srv.NewRPCClient()
+}
 
-	startTestService(ctx)
+func (suite *DiscogsTestSuite) TearDownSuite() {
+	suite.cancel()
+	suite.cl.Close()
+}
 
-	cl := srv.NewRPCClient()
-	defer cl.Close()
+func (suite *DiscogsTestSuite) TestBaseServiceCommands() {
+	correlationID, data, err := srv.CreateCmdRequest("ping")
+	require.NoError(suite.T(), err)
+	suite.cl.Request(ServiceName, correlationID, data)
+	respData := suite.cl.Result(correlationID)
+	suite.Empty(respData)
 
+	correlationID, data, err = srv.CreateCmdRequest("x")
+	require.NoError(suite.T(), err)
+	suite.cl.Request(ServiceName, correlationID, data)
+	vInfo, err := srv.ParseErrorAnswer(suite.cl.Result(correlationID))
+	require.NoError(suite.T(), err)
+	// {"error": "Unknown command: x", "context": "Message dispatcher"}
+	suite.Equal(vInfo.Error, "Unknown command: x")
+}
+
+func (suite *DiscogsTestSuite) TestSearchRelease() {
 	r := md.NewRelease()
 	r.Title = "The Dark Side Of The Moon"
 	r.Year = 1977
@@ -57,25 +55,25 @@ func TestSearchRelease(t *testing.T) {
 	r.Publishing = append(r.Publishing, &md.Publishing{Name: "Harvest", Catno: "SHVL 804"})
 
 	correlationID, data, err := CreateReleaseRequest(r)
-	require.NoError(t, err)
-	cl.Request(ServiceName, correlationID, data)
+	require.NoError(suite.T(), err)
+	suite.cl.Request(ServiceName, correlationID, data)
 
-	suggestions, err := ParseReleaseAnswer(cl.Result(correlationID))
-	require.NoError(t, err)
+	set, err := ParseReleaseAnswer(suite.cl.Result(correlationID))
+	require.NoError(suite.T(), err)
 
-	assert.NotEmpty(t, suggestions)
-	assert.Equal(t, suggestions[0].Release.Title, "The Dark Side Of The Moon")
+	suite.NotEmpty(set)
+	suite.Equal(set.Suggestions[0].Release.Title, "The Dark Side Of The Moon")
 }
 
-func startTestService(ctx context.Context) {
-	mut.Lock()
-	defer mut.Unlock()
-	if testService == nil {
-		testService = New(
-			os.Getenv("DISCOGS_APP"),
-			os.Getenv("DISCOGS_PERSONAL_TOKEN"))
-		msgs := testService.ConnectToMessageBroker("amqp://guest:guest@localhost:5672/")
-		testService.Log.SetLevel(log.DebugLevel)
-		go testService.Start(msgs)
-	}
+func (suite *DiscogsTestSuite) startTestService(ctx context.Context) {
+	testService := New(
+		os.Getenv("DISCOGS_APP"),
+		os.Getenv("DISCOGS_PERSONAL_TOKEN"))
+	msgs := testService.ConnectToMessageBroker("amqp://guest:guest@localhost:5672/")
+	testService.Log.SetLevel(log.DebugLevel)
+	go testService.Start(msgs)
+}
+
+func TestDiscogsSuite(t *testing.T) {
+	suite.Run(t, new(DiscogsTestSuite))
 }

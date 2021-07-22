@@ -130,36 +130,47 @@ func (d *Discogs) logRequest(req *AudioOnlineRequest) {
 
 // RunCmd вызывает командам  запроса методы сервиса и возвращает результат клиенту.
 func (d *Discogs) RunCmd(req *AudioOnlineRequest, delivery *amqp.Delivery) {
+	var data []byte
+	var err error
+	var baseCmd bool
+
 	switch req.Cmd {
 	case "release":
-		go d.release(req, delivery)
+		data, err = d.release(req, delivery)
 	default:
 		d.Service.RunCmd(req.Cmd, delivery)
+		baseCmd = true
+	}
+
+	if baseCmd {
+		return
+	}
+
+	if err != nil {
+		d.AnswerWithError(delivery, err, req.Cmd)
+	} else {
+		d.Log.Debug(string(data))
+		d.Answer(delivery, data)
 	}
 }
 
 // Обрабатываются следующие сущности: release (actor и label будут добавлены позже).
-func (d *Discogs) release(request *AudioOnlineRequest, delivery *amqp.Delivery) {
-	// разбор параметров входного запроса
+func (d *Discogs) release(request *AudioOnlineRequest, delivery *amqp.Delivery) ([]byte, error) {
 	var err error
 	var set *md.SuggestionSet
+
 	if _, ok := request.Release.IDs[ServiceName]; ok {
 		set, err = d.searchReleaseByID(request.Release.IDs[ServiceName])
 	} else {
 		set, err = d.searchReleaseByIncompleteData(request.Release)
 	}
 	if err != nil {
-		d.AnswerWithError(delivery, err, "Getting release data")
-		return
+		return nil, err
 	}
+
 	set.Optimize()
-	// отправка ответа
-	if suggestionsJSON, err := json.Marshal(set); err != nil {
-		d.AnswerWithError(delivery, err, "Response")
-	} else {
-		d.Log.Debug(string(suggestionsJSON))
-		d.Answer(delivery, suggestionsJSON)
-	}
+
+	return json.Marshal(set)
 }
 
 func (d *Discogs) searchReleaseByID(id string) (*md.SuggestionSet, error) {

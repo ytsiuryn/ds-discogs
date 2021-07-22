@@ -29,10 +29,10 @@ func CreateReleaseRequest(r *md.Release) (string, []byte, error) {
 }
 
 // ParseReleaseAnswer разбирает ответ с предложением метаданных релиза.
-func ParseReleaseAnswer(data []byte) ([]*md.Suggestion, error) {
-	suggestions := []*md.Suggestion{}
-	if err := json.Unmarshal(data, &suggestions); err != nil {
+func ParseReleaseAnswer(data []byte) (*md.SuggestionSet, error) {
+	set := md.NewSuggestionSet()
+	if err := json.Unmarshal(data, &set); err != nil {
 		return nil, err
 	}
-	return suggestions, nil
+	return set, nil
 }
