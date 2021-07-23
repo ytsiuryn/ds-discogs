@@ -112,7 +112,7 @@ func (d *Discogs) logRequest(req *AudioOnlineRequest) {
 			d.Log.WithField("args", req.Release.IDs[ServiceName]).Info(req.Cmd + "()")
 		} else { // TODO: может стоит офомить метод String() для md.Release?
 			var args []string
-			if actor := string(req.Release.ActorRoles.Filter(md.IsPerformer).First()); actor != "" {
+			if actor := req.Release.ActorRoles.Filter(md.IsPerformer).First(); actor != "" {
 				args = append(args, actor)
 			}
 			if req.Release.Title != "" {
@@ -264,7 +264,7 @@ func searchURL(release *md.Release, entityType string) string {
 	if performers := release.ActorRoles.Filter(md.IsPerformer); len(performers) > 0 {
 		for actorName := range performers {
 			builder.WriteString("&artist=")
-			builder.WriteString(string(actorName))
+			builder.WriteString(actorName)
 		}
 	}
 	if len(release.Publishing) > 0 {
