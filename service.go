@@ -55,6 +55,22 @@ func New(app, token string) *Discogs {
 	return ret
 }
 
+// AnswerWithError заполняет структуру ответа информацией об ошибке.
+func (d *Discogs) AnswerWithError(delivery *amqp.Delivery, err error, context string) {
+	d.LogOnError(err, context)
+	req := &AudioOnlineResponse{
+		Error: srv.ErrorResponse{
+			Error:   err.Error(),
+			Context: context,
+		},
+	}
+	data, err := json.Marshal(req)
+	if err != nil {
+		srv.FailOnError(err, "Answer marshalling error")
+	}
+	d.Answer(delivery, data)
+}
+
 // TestPollingInterval выполняет определение частоты опроса сервера на примере тестового запроса.
 // Периодичность расчитывается в наносекундах.
 func (d *Discogs) TestPollingInterval() {
@@ -170,7 +186,7 @@ func (d *Discogs) release(request *AudioOnlineRequest, delivery *amqp.Delivery) 
 
 	set.Optimize()
 
-	return json.Marshal(set)
+	return json.Marshal(AudioOnlineResponse{SuggestionSet: set})
 }
 
 func (d *Discogs) searchReleaseByID(id string) (*md.SuggestionSet, error) {

@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	md "github.com/ytsiuryn/ds-audiomd"
+	srv "github.com/ytsiuryn/ds-microservice"
 )
 
 type AudioOnlineRequest struct {
@@ -13,6 +14,11 @@ type AudioOnlineRequest struct {
 	Release *md.Release `json:"release"`
 	// Actor
 	// *md.Publishing
+}
+
+type AudioOnlineResponse struct {
+	SuggestionSet *md.SuggestionSet `json:"suggestion_set,omitempty"`
+	Error         srv.ErrorResponse `json:"error,omitempty"`
 }
 
 // CreateReleaseRequest формирует данные запроса поиска релиза по указанным метаданным.
@@ -29,10 +35,10 @@ func CreateReleaseRequest(r *md.Release) (string, []byte, error) {
 }
 
 // ParseReleaseAnswer разбирает ответ с предложением метаданных релиза.
-func ParseReleaseAnswer(data []byte) (*md.SuggestionSet, error) {
-	set := md.NewSuggestionSet()
-	if err := json.Unmarshal(data, &set); err != nil {
+func ParseReleaseAnswer(data []byte) (*AudioOnlineResponse, error) {
+	resp := AudioOnlineResponse{}
+	if err := json.Unmarshal(data, &resp); err != nil {
 		return nil, err
 	}
-	return set, nil
+	return &resp, nil
 }
