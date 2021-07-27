@@ -59,7 +59,7 @@ func New(app, token string) *Discogs {
 func (d *Discogs) AnswerWithError(delivery *amqp.Delivery, err error, context string) {
 	d.LogOnError(err, context)
 	req := &AudioOnlineResponse{
-		Error: srv.ErrorResponse{
+		Error: &srv.ErrorResponse{
 			Error:   err.Error(),
 			Context: context,
 		},
@@ -148,17 +148,12 @@ func (d *Discogs) logRequest(req *AudioOnlineRequest) {
 func (d *Discogs) RunCmd(req *AudioOnlineRequest, delivery *amqp.Delivery) {
 	var data []byte
 	var err error
-	var baseCmd bool
 
 	switch req.Cmd {
 	case "release":
-		data, err = d.release(req, delivery)
+		data, err = d.release(req)
 	default:
 		d.Service.RunCmd(req.Cmd, delivery)
-		baseCmd = true
-	}
-
-	if baseCmd {
 		return
 	}
 
@@ -171,7 +166,7 @@ func (d *Discogs) RunCmd(req *AudioOnlineRequest, delivery *amqp.Delivery) {
 }
 
 // Обрабатываются следующие сущности: release (actor и label будут добавлены позже).
-func (d *Discogs) release(request *AudioOnlineRequest, delivery *amqp.Delivery) ([]byte, error) {
+func (d *Discogs) release(request *AudioOnlineRequest) ([]byte, error) {
 	var err error
 	var set *md.SuggestionSet
 

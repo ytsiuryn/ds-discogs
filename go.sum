@@ -25,10 +25,14 @@ github.com/ytsiuryn/ds-audiomd v0.2.6 h1:LUS9e4yUlndGhhkQ4Zdypl00HHNbNUW33cFJ1bT
 github.com/ytsiuryn/ds-audiomd v0.2.6/go.mod h1:MVhMw/IHJIjYJFPTK5GLspxLkaf2UMX7WfcE0yzBOGU=
 github.com/ytsiuryn/ds-audiomd v0.2.7 h1:pHwMo8Yl84edl8+7rKCsc/X2lESZUt8FezeTFFWJgVQ=
 github.com/ytsiuryn/ds-audiomd v0.2.7/go.mod h1:MVhMw/IHJIjYJFPTK5GLspxLkaf2UMX7WfcE0yzBOGU=
+github.com/ytsiuryn/ds-audiomd v0.3.0 h1:fzoYdDKyWW5aExBH44tHKJmHP9XXUJMltO0FoJcO04c=
+github.com/ytsiuryn/ds-audiomd v0.3.0/go.mod h1:MVhMw/IHJIjYJFPTK5GLspxLkaf2UMX7WfcE0yzBOGU=
 github.com/ytsiuryn/ds-microservice v0.7.3 h1:2x/e7p3rM+L0GfgqqEy3bpSXHqWNwXkxMSNSKgIUEww=
 github.com/ytsiuryn/ds-microservice v0.7.3/go.mod h1:xJCBFlFRPe9PXFfs7hVePrfXMp3tfUw70OUDBu15Y3I=
 github.com/ytsiuryn/ds-microservice v0.7.4 h1:+UyJ5NDqWh1xZjLVDRk1pQuGi4yEWThf4FTYcMu7nMs=
 github.com/ytsiuryn/ds-microservice v0.7.4/go.mod h1:xJCBFlFRPe9PXFfs7hVePrfXMp3tfUw70OUDBu15Y3I=
+github.com/ytsiuryn/ds-microservice v0.7.6 h1:B1Yp6tD0g585J0uSrp2DMkZmpV99VGJZgOURfgCO/HY=
+github.com/ytsiuryn/ds-microservice v0.7.6/go.mod h1:rlQik/5GuhdSWCZMgn8+XfQ0Td3ee0GWFT8qifKTPyk=
 github.com/ytsiuryn/go-collection v0.0.2 h1:/i09VVKL4HJPu+VEdmdIQaYX36Fxm+ltvNVdhlEyjEo=
 github.com/ytsiuryn/go-collection v0.0.2/go.mod h1:nPgGjU7QxWPoHjd88rJT51/SKHJzJFVHbCNFr3XxY7w=
 github.com/ytsiuryn/go-intutils v0.0.2 h1:r2nV3r6TnhGrezcvtfryNkN6mUpAfRo99hvbhwBKo90=

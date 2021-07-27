@@ -58,11 +58,12 @@ func (suite *DiscogsTestSuite) TestSearchRelease() {
 	require.NoError(suite.T(), err)
 	suite.cl.Request(ServiceName, correlationID, data)
 
-	answ, err := ParseReleaseAnswer(suite.cl.Result(correlationID))
+	resp, err := ParseReleaseAnswer(suite.cl.Result(correlationID))
 	require.NoError(suite.T(), err)
+	require.Empty(suite.T(), resp.Error)
 
-	suite.NotEmpty(answ)
-	suite.Equal(answ.SuggestionSet.Suggestions[0].Release.Title, "The Dark Side Of The Moon")
+	suite.NotEmpty(resp)
+	suite.Equal(resp.SuggestionSet.Suggestions[0].Release.Title, "The Dark Side Of The Moon")
 }
 
 func (suite *DiscogsTestSuite) startTestService(ctx context.Context) {
