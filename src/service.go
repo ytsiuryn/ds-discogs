@@ -15,7 +15,10 @@ import (
 	srv "github.com/ytsiuryn/ds-microservice"
 )
 
-const ServiceName = "discogs"
+// Константы микросервиса.
+const (
+	ServiceName = "discogs"
+)
 
 // Suggestion constants
 const (
@@ -65,9 +68,7 @@ func (d *Discogs) AnswerWithError(delivery *amqp.Delivery, err error, context st
 		},
 	}
 	data, err := json.Marshal(req)
-	if err != nil {
-		srv.FailOnError(err, "Answer marshalling error")
-	}
+	srv.FailOnError(err, "Answer marshalling error")
 	d.Answer(delivery, data)
 }
 
@@ -101,13 +102,13 @@ func (d *Discogs) Start(msgs <-chan amqp.Delivery) {
 
 	go func() {
 		for delivery := range msgs {
-			var req AudioOnlineRequest
-			if err := json.Unmarshal(delivery.Body, &req); err != nil {
+			req := NewAudioOnlineRequest()
+			if err := json.Unmarshal(delivery.Body, req); err != nil {
 				d.AnswerWithError(&delivery, err, "Message dispatcher")
 				continue
 			}
-			d.logRequest(&req)
-			d.RunCmd(&req, &delivery)
+			d.logRequest(req)
+			d.RunCmd(req, &delivery)
 		}
 	}()
 
@@ -125,7 +126,7 @@ func (d *Discogs) cleanup() {
 func (d *Discogs) logRequest(req *AudioOnlineRequest) {
 	if req.Release != nil {
 		if _, ok := req.Release.IDs[ServiceName]; ok {
-			d.Log.WithField("args", req.Release.IDs[ServiceName]).Info(req.Cmd + "()")
+			d.Log.WithField("release", req.Release.IDs[ServiceName]).Info(req.Cmd + "()")
 		} else { // TODO: может стоит офомить метод String() для md.Release?
 			var args []string
 			if actor := req.Release.ActorRoles.Filter(md.IsPerformer).First(); actor != "" {
@@ -137,7 +138,7 @@ func (d *Discogs) logRequest(req *AudioOnlineRequest) {
 			if req.Release.Year != 0 {
 				args = append(args, strconv.Itoa(req.Release.Year))
 			}
-			d.Log.WithField("args", strings.Join(args, "-")).Info(req.Cmd + "()")
+			d.Log.WithField("release", strings.Join(args, "-")).Info(req.Cmd + "()")
 		}
 	} else {
 		d.Log.Info(req.Cmd + "()")

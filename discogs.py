@@ -78,11 +78,11 @@ class OnlineDBClient(RPCClient):
         super().__init__(queue_name)
 
     def search_by_release_id(self, id):
-        return self.call({"cmd": "search", "params": {"release_id": id}})
+        return self.call({"cmd": "release", "params": {"release_id": id}})
 
     def search_by_release(self, release_data):
         return self.call(
-            {"cmd": "search", "params": {"release": release_data}})
+            {"cmd": "release", "params": {"release": release_data}})
 
 
 class DiscogsClient(OnlineDBClient):
