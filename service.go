@@ -60,7 +60,7 @@ func New(app, token string) *Discogs {
 
 // AnswerWithError заполняет структуру ответа информацией об ошибке.
 func (d *Discogs) AnswerWithError(delivery *amqp.Delivery, err error, context string) {
-	d.LogOnError(err, context)
+	d.LogOnErrorWithContext(err, context)
 	req := &AudioOnlineResponse{
 		Error: &srv.ErrorResponse{
 			Error:   err.Error(),
@@ -82,7 +82,7 @@ func (d *Discogs) TestPollingInterval() {
 	v := resource.Response.Header["X-Discogs-Ratelimit"]
 	rate, err := strconv.Atoi(string(v[0]))
 	if err != nil {
-		d.LogOnError(err, "header 'X-Discogs-Ratelimit' conversion")
+		d.LogOnErrorWithContext(err, "header 'X-Discogs-Ratelimit' conversion")
 		return
 	}
 	pollingInterval := time.Duration(60*1000/rate) * time.Millisecond
@@ -91,9 +91,11 @@ func (d *Discogs) TestPollingInterval() {
 	d.Log.Info("Polling interval: ", pollingInterval)
 }
 
-// Start запускает Web Poller и цикл обработки взодящих запросов.
+// StartWithConnection запускает Web Poller и цикл обработки входящих запросов.
 // Контролирует сигнал завершения цикла и последующего освобождения ресурсов микросервиса.
-func (d *Discogs) Start(msgs <-chan amqp.Delivery) {
+func (d *Discogs) StartWithConnection(connstr string) {
+	msgs := d.Service.ConnectToMessageBroker(connstr)
+
 	d.poller.Start()
 	go d.TestPollingInterval()
 

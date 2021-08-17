@@ -1,7 +1,6 @@
 package discogs
 
 import (
-	"context"
 	"os"
 	"testing"
 
@@ -15,19 +14,15 @@ import (
 
 type DiscogsTestSuite struct {
 	suite.Suite
-	cl     *srv.RPCClient
-	ctx    context.Context
-	cancel context.CancelFunc
+	cl *srv.RPCClient
 }
 
 func (suite *DiscogsTestSuite) SetupSuite() {
-	suite.ctx, suite.cancel = context.WithCancel(context.Background())
-	suite.startTestService(suite.ctx)
+	suite.startTestService()
 	suite.cl = srv.NewRPCClient()
 }
 
 func (suite *DiscogsTestSuite) TearDownSuite() {
-	suite.cancel()
 	suite.cl.Close()
 }
 
@@ -65,13 +60,12 @@ func (suite *DiscogsTestSuite) TestSearchRelease() {
 	suite.Equal(resp.Unwrap().Suggestions[0].Release.Title, "The Dark Side Of The Moon")
 }
 
-func (suite *DiscogsTestSuite) startTestService(ctx context.Context) {
+func (suite *DiscogsTestSuite) startTestService() {
 	testService := New(
 		os.Getenv("DISCOGS_APP"),
 		os.Getenv("DISCOGS_PERSONAL_TOKEN"))
-	msgs := testService.ConnectToMessageBroker("amqp://guest:guest@localhost:5672/")
 	testService.Log.SetLevel(log.DebugLevel)
-	go testService.Start(msgs)
+	go testService.StartWithConnection("amqp://guest:guest@localhost:5672/")
 }
 
 func TestDiscogsSuite(t *testing.T) {
