@@ -281,6 +281,7 @@ func searchURL(release *md.Release, entityType string) string {
 	builder.WriteString(BaseURL)
 	builder.WriteString("database/search?type=")
 	builder.WriteString(entityType)
+	builder.WriteString("&title=")
 	builder.WriteString(release.Title)
 	if performers := release.ActorRoles.Filter(md.IsPerformer); len(performers) > 0 {
 		for actorName := range performers {
