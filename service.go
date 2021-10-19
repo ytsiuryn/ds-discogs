@@ -79,8 +79,15 @@ func (d *Discogs) TestPollingInterval() {
 	if resource.Err != nil {
 		srv.FailOnError(resource.Err, "Polling interval testing")
 	}
-	v := resource.Response.Header["X-Discogs-Ratelimit"]
-	rate, err := strconv.Atoi(string(v[0]))
+
+	if len(resource.Response.Header) == 0 {
+		d.Log.Warn(`Define DISCOGS_APP/DISCOGS_PERSONAL_TOKEN environment variables
+	to achieve the maximum number of requests per minute`)
+		d.poller.SetPollingInterval(time.Duration(2400) * time.Millisecond)
+		return
+	}
+
+	rate, err := strconv.Atoi(string(resource.Response.Header[RateHeaderKey][0]))
 	if err != nil {
 		d.LogOnErrorWithContext(err, "header 'X-Discogs-Ratelimit' conversion")
 		return
@@ -206,7 +213,7 @@ func (d *Discogs) searchReleaseByIncompleteData(release *md.Release) (*md.Sugges
 	var suggestions []*md.Suggestion
 	// discogs release search...
 	var preResult searchResponse
-	if err := d.poller.Decode(searchURL(release, "release"), d.headers, &preResult); err != nil {
+	if err := d.poller.DecodeJSON(searchURL(release, "release"), d.headers, &preResult); err != nil {
 		return nil, err
 	}
 	var score float64
@@ -248,14 +255,14 @@ func (d *Discogs) searchReleaseByIncompleteData(release *md.Release) (*md.Sugges
 func (d *Discogs) releaseByID(id string, release *md.Release) error {
 	// сведения о релизе...
 	var releaseResp releaseInfo
-	if err := d.poller.Decode(BaseURL+"releases/"+id, d.headers, &releaseResp); err != nil {
+	if err := d.poller.DecodeJSON(BaseURL+"releases/"+id, d.headers, &releaseResp); err != nil {
 		return err
 	}
 	releaseResp.Release(release)
 	// сведения о мастер-релизе...
 	if releaseResp.MasterURL != "" {
 		var masterResp masterInfo
-		if err := d.poller.Decode(releaseResp.MasterURL, d.headers, &masterResp); err != nil {
+		if err := d.poller.DecodeJSON(releaseResp.MasterURL, d.headers, &masterResp); err != nil {
 			return err
 		}
 		masterResp.Master(release)
