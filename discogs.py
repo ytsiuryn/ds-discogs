@@ -1,7 +1,7 @@
 import json
-import fastunit
 import pika
 import uuid
+import unittest
 
 
 incomplete_data = {
@@ -82,7 +82,10 @@ class OnlineDBClient(RPCClient):
 
     def search_by_release(self, release_data):
         return self.call(
-            {"cmd": "release", "params": {"release": release_data}})
+            {"cmd": "release", "release": release_data})
+
+    def release(self, resp):
+        return resp["suggestion_set"]["suggestions"][0]["release"]
 
 
 class DiscogsClient(OnlineDBClient):
@@ -90,7 +93,7 @@ class DiscogsClient(OnlineDBClient):
         super().__init__('discogs')
 
 
-class TestDiscogs(fastunit.TestCase):
+class TestDiscogs(unittest.TestCase):
     def setUp(self):
         self.cl = DiscogsClient()
 
@@ -107,15 +110,13 @@ class TestDiscogs(fastunit.TestCase):
     def test_release_by_id(self):
         resp = json.loads(self.cl.search_by_release_id(4139588))
         self.assertEqual(
-            resp["suggestions"][0]["release"]["title"].lower(),
-            "the dark side of the moon")
+            self.cl.release(resp)["title"].lower(), "the dark side of the moon")
 
     def test_search_by_release(self):
         resp = json.loads(self.cl.search_by_release(incomplete_data))
         self.assertEqual(
-            resp["suggestion_set"]["suggestions"][0]["release"]["title"].lower(),
-            "the dark side of the moon")
+            self.cl.release(resp)["title"].lower(), "the dark side of the moon")
 
 
 if __name__ == '__main__':
-    fastunit.main()
+    unittest.main()
