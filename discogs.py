@@ -6,13 +6,14 @@ import unittest
 
 incomplete_data = {
     "year": 1977,
-    "publishing": [
-        {
-            "name": "Harvest",
-            # "catno": "3C 064-05249"
-            "catno": "SHVL 804"
-        }
-    ],
+    "publishing": {
+        "labels": [
+            {
+                "name": "Harvest",
+                "catno": "SHVL 804"
+            }
+        ]
+    },
     "title": "The Dark Side Of The Moon",
     "recording": {
         "actors": [

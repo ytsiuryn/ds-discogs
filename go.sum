@@ -17,6 +17,12 @@ github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5Cc
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/ytsiuryn/ds-audiomd v0.3.0 h1:fzoYdDKyWW5aExBH44tHKJmHP9XXUJMltO0FoJcO04c=
 github.com/ytsiuryn/ds-audiomd v0.3.0/go.mod h1:MVhMw/IHJIjYJFPTK5GLspxLkaf2UMX7WfcE0yzBOGU=
+github.com/ytsiuryn/ds-audiomd v0.4.1 h1:6WLZrP2c3z4h5BbDG8VMrnWZxyqaPRdbgHAZp6MG160=
+github.com/ytsiuryn/ds-audiomd v0.4.1/go.mod h1:d0ShYHuSRtF9imRSBZU9iyoqrjd2HhCCrZ0YDya4XfE=
+github.com/ytsiuryn/ds-audiomd v0.4.2 h1:M+BmuJfIfWQYyActVdgkPnLwEDthweokmvGuWScmxTk=
+github.com/ytsiuryn/ds-audiomd v0.4.2/go.mod h1:d0ShYHuSRtF9imRSBZU9iyoqrjd2HhCCrZ0YDya4XfE=
+github.com/ytsiuryn/ds-audiomd v0.4.3 h1:l3/XwyJvmaM45+db1JgfD40MvTzK3oaZRLQ0/jjMXXc=
+github.com/ytsiuryn/ds-audiomd v0.4.3/go.mod h1:d0ShYHuSRtF9imRSBZU9iyoqrjd2HhCCrZ0YDya4XfE=
 github.com/ytsiuryn/ds-microservice v0.8.1 h1:fl4aJ+IaWK9KMLsE4a83ncsjZtRHoTrVJTXC/UM53nQ=
 github.com/ytsiuryn/ds-microservice v0.8.1/go.mod h1:WUMWVggqePYM8NyPpM8omHSMlSGorZ9GNaQtL7A4uqM=
 github.com/ytsiuryn/ds-microservice v0.8.3 h1:Eh9V9s8ggOzhpzudVi5/vviiRZpsEXOyNdu7RmPq/rw=
@@ -35,6 +41,8 @@ golang.org/x/sys v0.0.0-20210816183151-1e6c022a8912 h1:uCLL3g5wH2xjxVREVuAbP9JM5
 golang.org/x/sys v0.0.0-20210816183151-1e6c022a8912/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20211015200801-69063c4bb744 h1:KzbpndAYEM+4oHRp9JmB2ewj0NHHxO3Z0g7Gus2O1kk=
 golang.org/x/sys v0.0.0-20211015200801-69063c4bb744/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359 h1:2B5p2L5IfGiD7+b9BOoRMC6DgObAVZV+Fsp050NqXik=
+golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/text v0.3.6/go.mod h1:5Zoc/QRtKVWzQhOtBMvqHzDpF6irO9z98xDceosuGiQ=
 golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=

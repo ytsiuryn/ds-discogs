@@ -134,8 +134,8 @@ func (d *Discogs) cleanup() {
 // Отображение сведений о выполняемом запросе.
 func (d *Discogs) logRequest(req *AudioOnlineRequest) {
 	if req.Release != nil {
-		if _, ok := req.Release.IDs[ServiceName]; ok {
-			d.Log.WithField("release", req.Release.IDs[ServiceName]).Info(req.Cmd + "()")
+		if _, ok := req.Release.IDs[md.DiscogsReleaseID]; ok {
+			d.Log.WithField("release", req.Release.IDs[md.DiscogsReleaseID]).Info(req.Cmd + "()")
 		} else { // TODO: может стоит офомить метод String() для md.Release?
 			var args []string
 			if actor := req.Release.ActorRoles.Filter(md.IsPerformer).First(); actor != "" {
@@ -180,8 +180,8 @@ func (d *Discogs) release(request *AudioOnlineRequest) ([]byte, error) {
 	var err error
 	var set *md.SuggestionSet
 
-	if _, ok := request.Release.IDs[ServiceName]; ok {
-		set, err = d.searchReleaseByID(request.Release.IDs[ServiceName])
+	if _, ok := request.Release.IDs[md.DiscogsReleaseID]; ok {
+		set, err = d.searchReleaseByID(request.Release.IDs[md.DiscogsReleaseID])
 	} else {
 		set, err = d.searchReleaseByIncompleteData(request.Release)
 	}
@@ -234,7 +234,7 @@ func (d *Discogs) searchReleaseByIncompleteData(release *md.Release) (*md.Sugges
 	// окончательные предложения
 	for i := len(suggestions) - 1; i >= 0; i-- {
 		r := suggestions[i].Release
-		if err := d.releaseByID(r.IDs[ServiceName], r); err != nil {
+		if err := d.releaseByID(r.IDs[md.DiscogsReleaseID], r); err != nil {
 			return nil, err
 		}
 		if score = release.Compare(r); score > MinSearchFullResult {
@@ -289,14 +289,14 @@ func searchURL(release *md.Release, entityType string) string {
 			builder.WriteString(actorName)
 		}
 	}
-	if len(release.Publishing) > 0 {
-		if len(release.Publishing[0].Name) > 0 {
+	if len(release.Publishing.Labels) > 0 {
+		if len(release.Publishing.Labels[0].Label) > 0 {
 			builder.WriteString("&label=")
-			builder.WriteString(release.Publishing[0].Name)
+			builder.WriteString(release.Publishing.Labels[0].Label)
 		}
-		if len(release.Publishing[0].Catno) > 0 {
+		if len(release.Publishing.Labels[0].Catno) > 0 {
 			builder.WriteString("&catno=")
-			builder.WriteString(release.Publishing[0].Catno)
+			builder.WriteString(release.Publishing.Labels[0].Catno)
 		}
 	}
 	if release.Year != 0 {

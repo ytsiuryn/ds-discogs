@@ -47,7 +47,8 @@ func (suite *DiscogsTestSuite) TestSearchRelease() {
 	r.Title = "The Dark Side Of The Moon"
 	r.Year = 1977
 	r.ActorRoles.Add("Pink Floyd", "performer")
-	r.Publishing = append(r.Publishing, &md.Publishing{Name: "Harvest", Catno: "SHVL 804"})
+	r.Publishing = md.NewPublishing()
+	r.Publishing.Labels = append(r.Publishing.Labels, md.NewLabel("Harvest", "SHVL 804"))
 
 	correlationID, data, err := CreateReleaseRequest(r)
 	require.NoError(suite.T(), err)

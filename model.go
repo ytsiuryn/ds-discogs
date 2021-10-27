@@ -159,14 +159,14 @@ func (sr *searchResponse) Search() []*md.Release {
 	var releases []*md.Release
 	for _, result := range sr.Results {
 		r := md.NewRelease()
-		r.IDs.Add(ServiceName, strconv.Itoa(int(result.ID)))
+		r.IDs[md.DiscogsReleaseID] = strconv.Itoa(int(result.ID))
 		r.Title = result.Title
 		r.Year = tp.NaiveStringToInt(result.Year)
 		for _, lblName := range result.Label {
-			r.Publishing = append(
-				r.Publishing,
-				&md.Publishing{
-					Name:  lblName,
+			r.Publishing.Labels = append(
+				r.Publishing.Labels,
+				&md.Label{
+					Label: lblName,
 					Catno: result.CatNo,
 				},
 			)
@@ -189,9 +189,9 @@ func (ai *releaseInfo) Release(r *md.Release) {
 	r.Country = ai.Country
 	r.Year = int(ai.Year)
 	r.Notes = ai.Notes
-	r.IDs.Add(ServiceName, strconv.Itoa(int(ai.ID)))
+	r.IDs[md.DiscogsReleaseID] = strconv.Itoa(int(ai.ID))
 	if ai.MasterID != 0 {
-		r.Original.IDs.Add(ServiceName, strconv.Itoa(int(ai.MasterID)))
+		r.Original.IDs[md.DiscogsMasterID] = strconv.Itoa(int(ai.MasterID))
 	}
 	for _, artist := range ai.Artists {
 		artist.ReleaseActor(r)
@@ -213,12 +213,10 @@ func (ai *releaseInfo) Release(r *md.Release) {
 			}
 		}
 	}
-	r.Publishing = r.Publishing[:0] // to reset after preliminary search
+	r.Publishing = md.NewPublishing()
 	for _, lbl := range ai.Labels {
-		lbl := lbl.Publishing()
-		if !collection.Contains(lbl, r.Publishing) {
-			r.Publishing = append(r.Publishing, lbl)
-		}
+		lbl := lbl.NewLabel()
+		r.Publishing.Labels = append(r.Publishing.Labels, lbl)
 	}
 	for i, fmt := range ai.Formats {
 		r.ReleaseType.DecodeSlice(&fmt.Descriptions)
@@ -261,7 +259,7 @@ func (a *artist) TrackActor(track *md.Track) {
 	} else {
 		ActorsByRole(track, a.Role).Add(a.Name, a.Role)
 	}
-	track.Actors.Add(a.Name, ServiceName, strconv.Itoa(int(a.ID)))
+	track.Actors.Add(a.Name, md.DiscogsArtistID, strconv.Itoa(int(a.ID)))
 }
 
 func (tr *track) Track() *md.Track {
@@ -296,12 +294,10 @@ func (tr *track) Track() *md.Track {
 	return track
 }
 
-func (lbl *label) Publishing() *md.Publishing {
-	return &md.Publishing{
-		Name:  lbl.Name,
-		Catno: lbl.Catno,
-		IDs:   map[string]string{ServiceName: strconv.Itoa(int(lbl.ID))},
-	}
+func (lbl *label) NewLabel() *md.Label {
+	ret := md.NewLabel(lbl.Name, lbl.Catno)
+	ret.IDs[md.DiscogsLabelID] = strconv.Itoa(int(lbl.ID))
+	return ret
 }
 
 func (fmt *format) DiscFormat() *md.DiscFormat {
