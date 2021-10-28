@@ -23,6 +23,8 @@ github.com/ytsiuryn/ds-audiomd v0.4.2 h1:M+BmuJfIfWQYyActVdgkPnLwEDthweokmvGuWSc
 github.com/ytsiuryn/ds-audiomd v0.4.2/go.mod h1:d0ShYHuSRtF9imRSBZU9iyoqrjd2HhCCrZ0YDya4XfE=
 github.com/ytsiuryn/ds-audiomd v0.4.3 h1:l3/XwyJvmaM45+db1JgfD40MvTzK3oaZRLQ0/jjMXXc=
 github.com/ytsiuryn/ds-audiomd v0.4.3/go.mod h1:d0ShYHuSRtF9imRSBZU9iyoqrjd2HhCCrZ0YDya4XfE=
+github.com/ytsiuryn/ds-audiomd v0.4.4 h1:g1eyxFmlSqCQUV38njToAH5Wg05pOnlRP27bVT4ffmY=
+github.com/ytsiuryn/ds-audiomd v0.4.4/go.mod h1:d0ShYHuSRtF9imRSBZU9iyoqrjd2HhCCrZ0YDya4XfE=
 github.com/ytsiuryn/ds-microservice v0.8.1 h1:fl4aJ+IaWK9KMLsE4a83ncsjZtRHoTrVJTXC/UM53nQ=
 github.com/ytsiuryn/ds-microservice v0.8.1/go.mod h1:WUMWVggqePYM8NyPpM8omHSMlSGorZ9GNaQtL7A4uqM=
 github.com/ytsiuryn/ds-microservice v0.8.3 h1:Eh9V9s8ggOzhpzudVi5/vviiRZpsEXOyNdu7RmPq/rw=
